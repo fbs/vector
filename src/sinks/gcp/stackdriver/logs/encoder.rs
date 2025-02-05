@@ -21,6 +21,7 @@ pub(super) struct StackdriverLogsEncoder {
     log_name: StackdriverLogName,
     resource: StackdriverResource,
     severity_key: Option<ConfigValuePath>,
+    labels_key: Option<ConfigValuePath>,
 }
 
 impl StackdriverLogsEncoder {
@@ -31,6 +32,7 @@ impl StackdriverLogsEncoder {
         log_name: StackdriverLogName,
         resource: StackdriverResource,
         severity_key: Option<ConfigValuePath>,
+        labels_key: Option<ConfigValuePath>,
     ) -> Self {
         Self {
             transformer,
@@ -38,6 +40,7 @@ impl StackdriverLogsEncoder {
             log_name,
             resource,
             severity_key,
+            labels_key,
         }
     }
 
@@ -75,6 +78,12 @@ impl StackdriverLogsEncoder {
             .map(remap_severity)
             .unwrap_or_else(|| 0.into());
 
+        let labels = self
+            .labels_key
+            .as_ref()
+            .and_then(|key| log.remove((PathPrefix::Event, &key.0)))
+            .unwrap_or_else(|| Value::Null);
+
         let mut event = Event::Log(log);
         self.transformer.transform(&mut event);
 
@@ -84,6 +93,7 @@ impl StackdriverLogsEncoder {
         entry.insert("logName".into(), json!(log_name));
         entry.insert("jsonPayload".into(), json!(log));
         entry.insert("severity".into(), json!(severity));
+        entry.insert("labels".into(), json!(labels));
         entry.insert(
             "resource".into(),
             json!({

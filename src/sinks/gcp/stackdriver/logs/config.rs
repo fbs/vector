@@ -77,6 +77,13 @@ pub(super) struct StackdriverConfig {
     #[configurable(metadata(docs::examples = "severity"))]
     pub(super) severity_key: Option<ConfigValuePath>,
 
+    /// The field of the log event from which to take the outgoing log's 'label' values.
+    ///
+    /// The named field is removed from the log event if present and must be an object of string values.
+    ///
+    #[configurable(metadata(docs::examples = "labels"))]
+    pub(super) labels_key: Option<ConfigValuePath>,
+
     #[serde(flatten)]
     pub(super) auth: GcpAuthConfig,
 
@@ -210,6 +217,7 @@ impl SinkConfig for StackdriverConfig {
                 self.log_name.clone(),
                 self.resource.clone(),
                 self.severity_key.clone(),
+                self.labels_key.clone(),
             ),
         };
 
