@@ -360,14 +360,15 @@ impl DeserializerConfig {
     pub fn default_stream_framing(&self) -> FramingConfig {
         match self {
             DeserializerConfig::Avro { .. } => FramingConfig::Bytes,
-            DeserializerConfig::Native => FramingConfig::LengthDelimited(Default::default()),
+            DeserializerConfig::Native
+            | DeserializerConfig::Protobuf(_) => FramingConfig::LengthDelimited(Default::default()),
+
             DeserializerConfig::Bytes
             | DeserializerConfig::Json(_)
             | DeserializerConfig::Influxdb(_)
             | DeserializerConfig::NativeJson(_) => {
                 FramingConfig::NewlineDelimited(Default::default())
             }
-            DeserializerConfig::Protobuf(_) => FramingConfig::Bytes,
             #[cfg(feature = "syslog")]
             DeserializerConfig::Syslog(_) => FramingConfig::NewlineDelimited(Default::default()),
             DeserializerConfig::Vrl(_) => FramingConfig::Bytes,
